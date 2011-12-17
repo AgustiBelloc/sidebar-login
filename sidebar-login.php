@@ -8,9 +8,9 @@ Author: Mike Jolley
 Author URI: http://mikejolley.com
 */
 
-load_plugin_textdomain('sblogin', CoopExtension_DIR.'/sidebar-login/langs/', 'sidebar-login/langs/');
+load_plugin_textdomain('sblogin', EXTENSION_DIR.'/sidebar-login/langs/', 'sidebar-login/langs/');
 
-if (is_admin()) include( WP_PLUGIN_DIR . '/sidebar-login/admin.php' );
+if (is_admin()) include( EXTENSION_DIR . '/sidebar-login/admin.php' );
 
 /* Call via function */
 function sidebarlogin( $args = '' ) {
@@ -191,14 +191,14 @@ function widget_wp_sidebarlogin($args) {
 function widget_wp_sidebarlogin_init() {
 
 	// CSS
-	if (is_ssl()) $myStyleFile = str_replace('http://','https://', CoopExtension_DIR) . '/sidebar-login/style.css';
-    else $myStyleFile = CoopExtension_DIR . '/sidebar-login/style.css';
+	if (is_ssl()) $myStyleFile = str_replace('http://','https://', EXTENSION_DIR) . '/sidebar-login/style.css';
+    else $myStyleFile = EXTENSION_DIR . '/sidebar-login/style.css';
     wp_register_style('wp_sidebarlogin_css_styles', $myStyleFile);
     wp_enqueue_style('wp_sidebarlogin_css_styles');
 
 	// Scripts
-	wp_register_script('blockui', CoopExtension_DIR . '/sidebar-login/js/blockui.js', array('jquery'), '1.0' );
-	wp_register_script('sidebar-login', CoopExtension_DIR . '/sidebar-login/js/sidebar-login.js', array('jquery', 'blockui'), '1.0' );
+	wp_register_script('blockui', EXTENSION_DIR . '/sidebar-login/js/blockui.js', array('jquery'), '1.0' );
+	wp_register_script('sidebar-login', EXTENSION_DIR . '/sidebar-login/js/sidebar-login.js', array('jquery', 'blockui'), '1.0' );
 	wp_enqueue_script('jquery');
 	wp_enqueue_script('blockui');
 	wp_enqueue_script('sidebar-login');
