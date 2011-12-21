@@ -7,10 +7,14 @@ Version: 2.3.3
 Author: Mike Jolley
 Author URI: http://mikejolley.com
 */
+if (defined('EXTENSIONS_URL')) $EXTENSIONS_URL = EXTENSIONS_URL;
+else $EXTENSIONS_URL = WP_PLUGIN_URL;
+if (defined('EXTENSIONS_DIR')) $extension_dir = EXTENSIONS_DIR;
+else $extension_dir = WP_PLUGIN_DIR;
 
-load_plugin_textdomain('sblogin', EXTENSIONS_URL.'/sidebar-login/langs/', 'sidebar-login/langs/');
+load_plugin_textdomain('sblogin', $EXTENSIONS_URL.'/sidebar-login/langs/', 'sidebar-login/langs/');
 
-if (is_admin()) include( EXTENSIONS_DIR . '/sidebar-login/admin.php' );
+if (is_admin()) include( $EXTENSIONS_DIR . '/sidebar-login/admin.php' );
 
 /* Call via function */
 function sidebarlogin( $args = '' ) {
@@ -18,10 +22,10 @@ function sidebarlogin( $args = '' ) {
 	if (!is_array($args)) parse_str($args, $args);
 
 	$defaults = array(
-		'before_widget'=>'',
-		'after_widget'=>'',
-		'before_title'=>'<h2>',
-		'after_title'=>'</h2>'
+		'before_widget'=>'<div class="sblogin clearfix">',
+		'after_widget'=>'</div>',
+		'before_title'=>'<h1 class="widget-title">',
+		'after_title'=>'</h1>'
 	);
 	$args = array_merge($defaults, $args);
 
@@ -53,16 +57,16 @@ function widget_wp_sidebarlogin($args) {
 	if ($user_ID != '') {
 
 		// User is logged in
-		global $current_user;
+		global $current_user, $user_login, $wp_rewrite;
   		get_currentuserinfo();
+  		echo $before_widget ;
+		if (empty($thewelcome)) $thewelcome = $current_user->display_name;//str_replace('%username%',ucwords($current_user->display_name),get_option('sidebarlogin_welcome_heading'));
 
-		if (empty($thewelcome)) $thewelcome = str_replace('%username%',ucwords($current_user->display_name),get_option('sidebarlogin_welcome_heading'));
+		$avatar_link = get_option('siteurl').'/'.$wp_rewrite->author_base.'/'.$user_login;
+		if (get_option('sidebar_login_avatar')=='1') echo '<div class="media-grid"><a href="'.$avatar_link.'">'.get_avatar($user_ID, $size = '38').'</a></div>';
 
-		echo $before_widget . $before_title .$thewelcome. $after_title;
-
-		if (get_option('sidebar_login_avatar')=='1') echo '<div class="avatar_container">'.get_avatar($user_ID, $size = '38').'</div>';
-
-		echo '<ul class="pagenav">';
+		echo '<ul class="logged-in">';
+		echo '<li>' . $before_title . $thewelcome . $after_title. '</li>';
 
 		if(isset($current_user->user_level) && $current_user->user_level) $level = $current_user->user_level;
 
@@ -88,7 +92,7 @@ function widget_wp_sidebarlogin($args) {
 				// Parse %USERID%
 				$link[0] = str_replace('%USERID%',$current_user->ID,$link[0]);
 				$link[0] = str_replace('%userid%',$current_user->ID,$link[0]);
-				echo '<li class="page_item">'.$link[0].'</li>';
+				//echo '<li class="page_item">'.$link[0].'</li>';
 			}
 		}
 
@@ -130,33 +134,33 @@ function widget_wp_sidebarlogin($args) {
 		// login form
 		if (force_ssl_login() || force_ssl_admin()) $sidebarlogin_post_url = str_replace('http://', 'https://', sidebar_login_current_url()); else $sidebarlogin_post_url = sidebar_login_current_url();
 		?>
-		<form method="post" action="<?php echo $sidebarlogin_post_url; ?>">
+		<form method="post" action="<?php echo $sidebarlogin_post_url; ?>" class="form-stacked">
+			<fieldset>
+				<div class="clearfix"><label for="user_login"><?php echo $theusername; ?></label> <div class="input"><input name="log" value="<?php if (isset($_POST['log'])) echo esc_attr(stripslashes($_POST['log'])); ?>" class="text" id="user_login" type="text" /></div></div>
+				<div class="clearfix"><label for="user_pass"><?php echo $thepassword; ?></label> <div class="input"><input name="pwd" class="text" id="user_pass" type="password" /></div></div>
 
-			<p><label for="user_login"><?php echo $theusername; ?></label> <input name="log" value="<?php if (isset($_POST['log'])) echo esc_attr(stripslashes($_POST['log'])); ?>" class="text" id="user_login" type="text" /></p>
-			<p><label for="user_pass"><?php echo $thepassword; ?></label> <input name="pwd" class="text" id="user_pass" type="password" /></p>
+				<?php
+					// OpenID Plugin (http://wordpress.org/extend/plugins/openid/) Integration
+					if (function_exists('openid_wp_login_form')) :
+						echo '
+							<hr id="openid_split" />
+							<div class="clearfix">
+								<label for="openid_field">' . __('Or login using an <a href="http://openid.net/what/" title="Learn about OpenID">OpenID</a>', 'sblogin') . '</label>
+								<input type="text" name="openid_identifier" id="openid_field" class="input mid" value="" /></label>
+							</div>
+						';
+					endif;
+				?>
 
-			<?php
-				// OpenID Plugin (http://wordpress.org/extend/plugins/openid/) Integration
-				if (function_exists('openid_wp_login_form')) :
-					echo '
-						<hr id="openid_split" />
-						<p>
-							<label for="openid_field">' . __('Or login using an <a href="http://openid.net/what/" title="Learn about OpenID">OpenID</a>', 'sblogin') . '</label>
-							<input type="text" name="openid_identifier" id="openid_field" class="input mid" value="" /></label>
-						</p>
-					';
-				endif;
-			?>
+				<div class="clearfix"><label for="rememberme"><input name="rememberme" class="checkbox" id="rememberme" value="forever" type="checkbox" /> <span><?php echo $theremember; ?></span></label></div>
 
-			<p class="rememberme"><input name="rememberme" class="checkbox" id="rememberme" value="forever" type="checkbox" /> <label for="rememberme"><?php echo $theremember; ?></label></p>
-
-			<p class="submit">
-				<input type="submit" name="wp-submit" id="wp-submit" value="<?php _e('Login &raquo;', 'sblogin'); ?>" />
-				<input type="hidden" name="redirect_to" class="redirect_to" value="<?php echo $redirect_to; ?>" />
-				<input type="hidden" name="sidebarlogin_posted" value="1" />
-				<input type="hidden" name="testcookie" value="1" />
-			</p>
-
+				<div class="clearfix">
+					<input type="submit" name="wp-submit" id="wp-submit" class="btn primary" value="<?php _e('Login &raquo;', 'sblogin'); ?>" />
+					<input type="hidden" name="redirect_to" class="redirect_to" value="<?php echo $redirect_to; ?>" />
+					<input type="hidden" name="sidebarlogin_posted" value="1" />
+					<input type="hidden" name="testcookie" value="1" />
+				</div>
+			</fieldset>
 			<?php if (function_exists('fbc_init_auth')) do_action('fbc_display_login_button'); // Facebook Plugin ?>
 
 		</form>
@@ -191,14 +195,14 @@ function widget_wp_sidebarlogin($args) {
 function widget_wp_sidebarlogin_init() {
 
 	// CSS
-	if (is_ssl()) $myStyleFile = str_replace('http://','https://', EXTENSIONS_URL) . '/sidebar-login/style.css';
-    else $myStyleFile = EXTENSIONS_URL . '/sidebar-login/style.css';
+	if (is_ssl()) $myStyleFile = str_replace('http://','https://', $EXTENSIONS_URL) . '/sidebar-login/style.css';
+    else $myStyleFile = $EXTENSIONS_URL . '/sidebar-login/style.css';
     wp_register_style('wp_sidebarlogin_css_styles', $myStyleFile);
     wp_enqueue_style('wp_sidebarlogin_css_styles');
 
 	// Scripts
-	wp_register_script('blockui', EXTENSIONS_URL . '/sidebar-login/js/blockui.js', array('jquery'), '1.0' );
-	wp_register_script('sidebar-login', EXTENSIONS_URL . '/sidebar-login/js/sidebar-login.js', array('jquery', 'blockui'), '1.0' );
+	wp_register_script('blockui', $EXTENSIONS_URL . '/sidebar-login/js/blockui.js', array('jquery'), '1.0' );
+	wp_register_script('sidebar-login', $EXTENSIONS_URL . '/sidebar-login/js/sidebar-login.js', array('jquery', 'blockui'), '1.0' );
 	wp_enqueue_script('jquery');
 	wp_enqueue_script('blockui');
 	wp_enqueue_script('sidebar-login');
