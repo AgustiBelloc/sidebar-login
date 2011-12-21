@@ -7,14 +7,12 @@ Version: 2.3.3
 Author: Mike Jolley
 Author URI: http://mikejolley.com
 */
-if (defined('EXTENSIONS_URL')) $EXTENSIONS_URL = EXTENSIONS_URL;
-else $EXTENSIONS_URL = WP_PLUGIN_URL;
-if (defined('EXTENSIONS_DIR')) $extension_dir = EXTENSIONS_DIR;
-else $extension_dir = WP_PLUGIN_DIR;
+if (!defined('EXTENSIONS_URL')) define('EXTENSIONS_URL', WP_PLUGIN_URL);
+if (!defined('EXTENSIONS_DIR')) define('EXTENSIONS_DIR', WP_PLUGIN_DIR);
 
-load_plugin_textdomain('sblogin', $EXTENSIONS_URL.'/sidebar-login/langs/', 'sidebar-login/langs/');
+load_plugin_textdomain('sblogin', EXTENSIONS_URL.'/sidebar-login/langs/', 'sidebar-login/langs/');
 
-if (is_admin()) include( $EXTENSIONS_DIR . '/sidebar-login/admin.php' );
+if (is_admin()) include( EXTENSIONS_DIR . '/sidebar-login/admin.php' );
 
 /* Call via function */
 function sidebarlogin( $args = '' ) {
@@ -195,14 +193,14 @@ function widget_wp_sidebarlogin($args) {
 function widget_wp_sidebarlogin_init() {
 
 	// CSS
-	if (is_ssl()) $myStyleFile = str_replace('http://','https://', $EXTENSIONS_URL) . '/sidebar-login/style.css';
-    else $myStyleFile = $EXTENSIONS_URL . '/sidebar-login/style.css';
+	if (is_ssl()) $myStyleFile = str_replace('http://','https://', EXTENSIONS_URL) . '/sidebar-login/style.css';
+    else $myStyleFile = EXTENSIONS_URL . '/sidebar-login/style.css';
     wp_register_style('wp_sidebarlogin_css_styles', $myStyleFile);
     wp_enqueue_style('wp_sidebarlogin_css_styles');
 
 	// Scripts
-	wp_register_script('blockui', $EXTENSIONS_URL . '/sidebar-login/js/blockui.js', array('jquery'), '1.0' );
-	wp_register_script('sidebar-login', $EXTENSIONS_URL . '/sidebar-login/js/sidebar-login.js', array('jquery', 'blockui'), '1.0' );
+	wp_register_script('blockui', EXTENSIONS_URL . '/sidebar-login/js/blockui.js', array('jquery'), '1.0' );
+	wp_register_script('sidebar-login', EXTENSIONS_URL . '/sidebar-login/js/sidebar-login.js', array('jquery', 'blockui'), '1.0' );
 	wp_enqueue_script('jquery');
 	wp_enqueue_script('blockui');
 	wp_enqueue_script('sidebar-login');
